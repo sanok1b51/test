@@ -1,0 +1,213 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+  <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+  <!--<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>-->
+  <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>-->
+
+
+
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="icon-bar">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/">Start Bootstrap</a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav">
+      {% if not request.get_full_path == '/' %}
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+            Категории
+             <span class="caret"></span>
+           </a>
+          <ul class="dropdown-menu">
+            {% for category in categories %}
+            <li><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></li>
+            {% endfor %}
+          </ul>
+        </li>
+      {% endif %}
+        {% if not request.user.is_authenticated%}
+          <li>
+             <p class="navbar-text">Здравствуйте Гость!</p>
+          </li>
+          <li><a href='{% url "login" %}'>Войти</a></li>
+          <li><a href='{% url "registration" %}'>Зарегистрироваться</a></li>
+          {% else %}
+          <li>
+             <p class="navbar-text">Здравствуйте {{ request.user }}</p>
+          </li>
+          <li><a href='{% url "account" %}'>Личный кабинет</a></li>
+          <li><a href='{% url "logout" %}'>Выйти</a></li>
+          {% endif %}
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+           <li><a href='{% url "cart" %}'>Корзина <span id='cart_count' class='badge'>{% if not request.session.total %} 0 {% else %} {{ request.session.total }} {% endif %}</span></a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
+        <li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<div class="container">
+  {% block content %}
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <form action="{% url 'search'  %}">
+          <div class="input-group">
+            <input type="text" class="form-control" name="q" id="input_search" placeholder="Введите название товара...">
+            <span class="input-group-btn">
+              <button class="btn btn-success" type="submit" id="search_button">Найти!</button>
+            </span>
+          </div><!-- /input-group -->
+        </form>
+        <div id="found" hidden>
+
+        </div>
+        </div><!-- /.col-lg-6 -->
+    </div>
+     <div class="row">
+       <div class="col-md-3">
+         <p class="load">Shop Name</p>
+         <div class="list-group">
+           {% for category in categories %}
+            <div>
+               <a href="{{ category.get_absolute_url }}" class="list-group-item top-level">{{ category.name }}</a>
+               <div class="list-group sub-items" hidden>
+                  {% load custom_tags %}
+                  {% sub_categories category.name as sub_categories %}
+                  {% for sub_category in sub_categories %}
+                    <div class="list-group-item list-group-item-secondary">
+                      <a href="{{ sub_category.get_absolute_url }}" class="list-group-item list-group-item-action list-group-item-primary">{{ sub_category.name }}
+                          <span class="badge badge-primary badge-pill">{{ sub_category.count }}</span>
+                      </a>
+                    </div>
+                  {% endfor %}
+               </div>
+              </div>
+           {% endfor%}
+         </div>
+       </div>
+
+       <div class="col-md-9">
+
+         <div class="row carousel-holder">
+
+           <div class="col=md-12">
+             <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+               <!-- Indicators -->
+               <ol class="carousel-indicators">
+                 <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                 <li data-target="#myCarousel" data-slide-to="1"></li>
+                 <li data-target="#myCarousel" data-slide-to="2"></li>
+               </ol>
+
+               <!-- Wrapper for slides -->
+               <div class="carousel-inner">
+                 {% for product in products %}
+                   {% if forloop.first %}
+                         <div class="item active">
+                           <img class="slide-image" src="{{ product.image.url }}" alt="">
+                           <br/>
+                           <a href="{{ product.get_absolute_url }}"><button class="btn btn-primary">{{ product.title }}</button></a>
+                         </div>
+                   {% else %}
+                         <div class="item">
+                           <img class="slide-image" src="{{ product.image.url }}" alt="">
+                           <br/>
+                           <a href="{{ product.get_absolute_url }}"><button class="btn btn-primary">{{ product.title }}</button></a>
+                         </div>
+                   {% endif %}
+                 {% endfor %}
+               </div>
+
+               <!-- Left and right controls -->
+               <a class="left carousel-control" href="#carousel-example-generic" data-slide="prev">
+                 <span class="glyphicon glyphicon-chevron-left"></span>
+               </a>
+               <a class="right carousel-control" href="#carousel-example-generic" data-slide="next">
+                 <span class="glyphicon glyphicon-chevron-right"></span>
+               </a>
+             </div>
+           </div>
+
+         </div>
+         <br/>
+
+         <div class="row product-row">
+            {% for product in products %}
+           <div class="col-sm-4 col-lg-4 col-md-4">
+             <div class="thumbnail">
+               <img src="{{ product.image.url }}" class="products-img" alt="">
+               <div class="caption">
+                 <h4 class="pull-right">{{ product.price }} руб.</h4>
+                 <h4><strong><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></strong></h4>
+                 {% if request.user.is_authenticated %}<p>{{ product.description }}</p>
+                 <a href='#' class="add_to_cart" data-slug='{{ product.slug }}'><button class="btn btn-danger">Добавить в корзину</button></a>
+                 {% endif %}
+               </div>
+
+             </div>
+
+           </div>
+           {% endfor %}
+         </div>
+
+       </div>
+     </div>
+  {% endblock content %}
+</div>
+<!-- Container -->
+
+<div class="container">
+
+    <hr>
+
+    <!-- Footer -->
+    <div class="row">
+      <div class="col-lg-12">
+        <p>Copyright &copy; Your Website 2019
+      </div>
+
+    </div>
+
+</hr>
+</div>
+
+<script src="{% static '/js/jquery.js' %}"></script>
+<script src="{% static '/js/bootstrap.min.js' %}"></script>
+<script src="{% static '/js/base.js' %}"></script>
+<script>
+    $(document).ready(function() {
+        $('.add_to_cart').on('click', function(e){
+           e.preventDefault()
+           product_slug = $(this).attr('data-slug')
+           data = {
+             product_slug: product_slug
+           }
+           $.ajax({
+             type: "GET",
+             url: '{% url "add_to_cart" %}',
+             data: data,
+             success: function(data){
+                 $("#cart_count").html(data.cart_total)
+             }
+           })
+        })
+    })
+</script>
+  </body>
+</html>
